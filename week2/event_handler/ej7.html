@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Toggle Switch</title>
+  <style>
+    /*setting the style for the toggle switch on and off states*/
+    .toggle {
+      display: inline-block;
+      width: 60px;
+      height: 34px;
+      position: relative;
+      border-radius: 34px;
+      background-color: rgb(221, 61, 55);
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .toggle::before {
+      content: "";
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background-color: #ffffff;
+      top: 4px;
+      left: 4px;
+      transition: transform 0.3s;
+    }
+
+    .toggle.on {
+      background-color: #66bb6a;
+    }
+
+    .toggle.on::before {
+      transform: translateX(26px);
+    }
+  </style>
+</head>
+<body>
+  <div class="toggle"></div>
+
+  <script src="ej7.js"></script>
+</body>
+</html>

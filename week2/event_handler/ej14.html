@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Capturing Events</title>
+</head>
+<body>
+<div 
+  style="width: 200px; height: 200px; background-color: lightblue;" id="parent"
+>
+  <div 
+    style="width: 100px; height: 100px; background-color: pink; margin: auto;" 
+    id="child"
+  >
+  </div>
+</div>
+
+<script>
+// Add capturing event listener to parent
+document.getElementById('parent').addEventListener(
+  'click',
+  () => {
+    console.log('Parent clicked (Capturing phase)');
+    alert('Parent clicked (Capturing phase)');
+  },
+  true // Use capturing phase
+);
+
+// Add capturing event listener to child
+document.getElementById('child').addEventListener(
+  'click',
+  () => {
+    console.log('Child clicked (Capturing phase)');
+    alert('Child clicked (Capturing phase)');
+  },
+  true // Use capturing phase
+);
+</script>
+ 
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Dropdown Menu</title>
+  <style>
+    /* Configuración del botón desplegable */
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
+    /* Estilo del botón */
+    .dropdown-button {
+      background-color:#27a4e3;
+      color: #333;
+      font-size: medium;
+      padding: 10px;
+      border: none;
+      cursor: pointer;
+    }
+    /* Estilo de las opciones del desplegable */
+    .dropdown-options {
+      display: none;
+      position: absolute;
+      background-color: #99dafa;
+      min-width: 120px;
+      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+      padding: 0;
+      margin: 0;
+      list-style: none;
+      z-index: 1;
+    }
+    .dropdown-option {
+      padding: 10px;
+      cursor: pointer;
+      border-bottom: 1px solid #FFFF;
+    }
+    .dropdown-option:last-child {
+      border-bottom: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- Dropdown button and options -->
+  <div class="dropdown">
+    <button class="dropdown-button">Select a Subject</button>
+    <ul id="dropdown-options" class="dropdown-options">
+      <li class="dropdown-option">Mathematics</li>
+      <li class="dropdown-option">English</li>
+      <li class="dropdown-option">Physics</li>
+    </ul>
+  </div>
+  <script src="ej2.js"></script>
+</body>
+</html>
