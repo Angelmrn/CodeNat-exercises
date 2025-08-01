@@ -1,0 +1,107 @@
+"use client";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+
+export default function LoginPage(){
+    const router = useRouter();
+    const [form, setForm] = useState({
+        email: "",
+        password: ""
+    });
+
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
+    const Regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setForm({ ...form, [e.target.name]: e.target.value});
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError("");
+
+        //VALIDATIONS
+        if( !form.email || !form.password ) {
+            setError("All fields are required.");
+            return;
+        }
+        if(!Regex.test(form.email)){
+            setError("Invalid email format.");
+            return;
+        }
+
+        setLoading(true);
+
+        try{
+            const response = await fetch("https://bapi.suajam.com/arteukimil/api/v1/login", {
+              method : "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                email: form.email,
+                password: form.password
+              })
+            });
+
+            if(!response.ok){
+              throw new Error("Invalid User. Please try again.");
+            }
+
+            const data = await response.json();
+            localStorage.setItem("token", data.token); // Store token in local storage
+            router.push("/"); // Redirect to Dashboard
+
+        }catch(error) {
+          setError("Error logging in.");
+        }finally {
+          setLoading(false);
+        }
+    };
+
+  return (
+    <div className="container mx-auto p-4 max-w-md">
+      <h1 className="text-2xl font-bold mb-4">Log in</h1>
+      
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="block mb-1">Email</label>
+          <input
+            type="email"
+            name="email"
+            value={form.email}
+            onChange={handleChange}
+            className="w-full p-2 border rounded"
+          />
+        </div>
+        
+        <div>
+          <label className="block mb-1">Password</label>
+          <input
+            type="password"
+            name="password"
+            value={form.password}
+            onChange={handleChange}
+            className="w-full p-2 border rounded"
+          />
+        </div>
+        
+        {error && <p className="text-red-500">{error}</p>}
+        
+        <button 
+          type="submit" 
+          className="w-full bg-blue-500 text-white p-2 rounded"
+          disabled={loading}
+        >
+          {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
+        </button>
+        
+        <p className="text-center">
+          ¿Don't have an account? <Link href="/register" className="text-blue-500">Register</Link>
+        </p>
+      </form>
+    </div>
+  );
+}
