@@ -7,7 +7,6 @@ import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 
 const drawerWidth = 240;
-//Prueba de repositorio 
 
 function DashboardLayout({children}) {
     const theme = useTheme();
