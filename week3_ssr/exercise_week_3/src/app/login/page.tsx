@@ -6,6 +6,7 @@ import Link from "next/link";
 export default function LoginPage(){
     const router = useRouter();
     const [form, setForm] = useState({
+        username: "",
         email: "",
         password: ""
     });
@@ -23,7 +24,7 @@ export default function LoginPage(){
         setError("");
 
         //VALIDATIONS
-        if( !form.email || !form.password ) {
+        if( !form.username || !form.email || !form.password ) {
             setError("All fields are required.");
             return;
         }
@@ -35,27 +36,38 @@ export default function LoginPage(){
         setLoading(true);
 
         try{
-            const response = await fetch("https://bapi.suajam.com/arteukimil/api/v1/login", {
+            const response = await fetch("https://bapi.suajam.com/arteukimil/api/v1/auth/login/", {
               method : "POST",
               headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Accept": "application/json"
               },
               body: JSON.stringify({
+                username: form.username,
                 email: form.email,
                 password: form.password
               })
             });
 
+            console.log("Login response status: ", response.status);
+          
             if(!response.ok){
-              throw new Error("Invalid User. Please try again.");
+              const errData = await response.json();
+              console.log("Login error data:", errData);
+              throw new Error(errData.message || "Invalid credentials. Please try again.");
             }
 
             const data = await response.json();
             localStorage.setItem("token", data.token); // Store token in local storage
+            localStorage.setItem("user", JSON.stringify({ // Store user data in local storage
+              username: form.username,
+              email: form.email
+            }));
             router.push("/"); // Redirect to Dashboard
 
-        }catch(error) {
-          setError("Error logging in.");
+        }catch(error: any) {
+          console.error("Login error:", error);
+          setError(error.message || "Error logging in.");
         }finally {
           setLoading(false);
         }
@@ -66,6 +78,17 @@ export default function LoginPage(){
       <h1 className="text-2xl font-bold mb-4">Log in</h1>
       
       <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="block mb-1">Username</label>
+          <input
+            type="text"
+            name="username"
+            value={form.username}
+            onChange={handleChange}
+            className="w-full p-2 border rounded"
+          />
+        </div>
+
         <div>
           <label className="block mb-1">Email</label>
           <input
@@ -93,13 +116,12 @@ export default function LoginPage(){
         <button 
           type="submit" 
           className="w-full bg-blue-500 text-white p-2 rounded"
-          disabled={loading}
         >
-          {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
+           Log in
         </button>
         
         <p className="text-center">
-          ¿Don't have an account? <Link href="/register" className="text-blue-500">Register</Link>
+           <Link href="/register" className="text-blue-500">¿Don't have an account?</Link>
         </p>
       </form>
     </div>
