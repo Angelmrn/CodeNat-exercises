@@ -75,39 +75,39 @@ export default function LoginPage(){
 
   return (
     <div className="container mx-auto p-4 max-w-md">
-      <h1 className="text-2xl font-bold mb-4">Log in</h1>
+      <h1 className="text-2xl font-bold mb-4 text-blue-500">Log in</h1>
       
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block mb-1">Username</label>
+          <label className="block mb-1 text-black">Username</label>
           <input
             type="text"
             name="username"
             value={form.username}
             onChange={handleChange}
-            className="w-full p-2 border rounded"
+            className="w-full p-2 border rounded border-black text-black"
           />
         </div>
 
         <div>
-          <label className="block mb-1">Email</label>
+          <label className="block mb-1 text-black">Email</label>
           <input
             type="email"
             name="email"
             value={form.email}
             onChange={handleChange}
-            className="w-full p-2 border rounded"
+            className="w-full p-2 border rounded border-black  text-black"
           />
         </div>
         
         <div>
-          <label className="block mb-1">Password</label>
+          <label className="block mb-1 text-black">Password</label>
           <input
             type="password"
             name="password"
             value={form.password}
             onChange={handleChange}
-            className="w-full p-2 border rounded"
+            className="w-full p-2 border rounded border-black text-black"
           />
         </div>
         
