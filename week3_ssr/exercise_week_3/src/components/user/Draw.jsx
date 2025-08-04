@@ -8,16 +8,15 @@ import Toolbar from '@mui/material/Toolbar';
 import Link from 'next/link';
 
 import AddIcon from '@mui/icons-material/Add';
-import AccountBoxIcon from '@mui/icons-material/AccountBox';
-import LogoutIcon from '@mui/icons-material/Logout';
+
+
  
 
 export default function Draw({variant, open, onClose, drawerWidth}) {
 
   const drawerItems = [
-    { text: 'Add Provider', icon : <AddIcon />, url: '' },
-    { text: 'Profile', icon: <AccountBoxIcon />, url: '' },
-    { text: 'Logout', icon: <LogoutIcon />, url: '' },
+    { text: 'Add Provider', icon : <AddIcon />, url: '/provider/create' },
+    
   ];
 
   return (

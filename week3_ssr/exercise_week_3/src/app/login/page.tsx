@@ -36,11 +36,10 @@ export default function LoginPage(){
         setLoading(true);
 
         try{
-            const response = await fetch("https://bapi.suajam.com/arteukimil/api/v1/auth/login/", {
+            const response = await fetch("/api/auth/login", {
               method : "POST",
               headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
+                "Content-Type": "application/json"
               },
               body: JSON.stringify({
                 username: form.username,
@@ -57,12 +56,12 @@ export default function LoginPage(){
               throw new Error(errData.message || "Invalid credentials. Please try again.");
             }
 
-            const data = await response.json();
+            /*const data = await response.json();
             localStorage.setItem("token", data.token); // Store token in local storage
             localStorage.setItem("user", JSON.stringify({ // Store user data in local storage
               username: form.username,
               email: form.email
-            }));
+            }));*/
             router.push("/"); // Redirect to Dashboard
 
         }catch(error: any) {

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { use, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -21,7 +21,8 @@ export default function RegisterPage(){
     const Regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setForm({ ...form, [e.target.name]: e.target.value});
+        const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+        setForm({ ...form, [e.target.name]: value });
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -44,26 +45,32 @@ export default function RegisterPage(){
 
         setLoading(true);
         try{
-          console.log("Form data:", form);
-            const response = await fetch("https://bapi.suajam.com/arteukimil/api/v1/auth/registration", {
-                method: "POST",
-                headers:{
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(form),
-            });
+          const response = await fetch("/api/auth/register", {
+            method: "POST",
+            headers:{
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              username: form.username,
+              email: form.email,
+              password1: form.password1,
+              password2: form.password2,
+              first_name: form.first_name,
+              last_name: form.last_name,
+              is_staff: form.is_staff,
+              is_superuser: form.is_superuser
+            })
+          });
 
-            console.log("Response status:", response.status);
-            const data = await response.json();
-            console.log("Response data:", data);
+          if(!response.ok){
+            const errData = await response.json();
+            console.error("Registration error data:", errData);
+            throw new Error(errData.error || "User Registration Failed. Please try again.");
+          }
 
-            if(!response.ok){
-                const errorMsg = data.detail || data.message || data.error || "Registration failed. Please try again.";
-                throw new Error(errorMsg);
+          alert("User registered successfully!");
+          router.push("/login"); 
 
-            }
-            alert("Registration successful!");
-            router.push("/login");// Redirect to login page
 
         }catch(error: any){
             setError(error.message || "User Registration Failed. Please try again.");
@@ -142,6 +149,28 @@ export default function RegisterPage(){
             onChange={handleChange}
             className="w-full p-2 border rounded border-black text-black"
           />
+        </div>
+
+        <div className="flex items-center">
+          <input
+            type="checkbox"
+            name="is_staff"
+            checked={form.is_staff}
+            onChange={handleChange}
+            className="mr-2 h-4 w-4"
+          />
+          <label className="text-black">is Staff</label>
+        </div>
+
+        <div className="flex items-center">
+          <input
+            type="checkbox"
+            name="is_superuser"
+            checked={form.is_superuser}
+            onChange={handleChange}
+            className="mr-2 h-4 w-4"
+          />
+          <label className="text-black">is Superuser</label>
         </div>
         
         {error && <p className="text-red-500">{error}</p>}

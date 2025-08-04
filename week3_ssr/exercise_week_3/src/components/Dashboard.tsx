@@ -9,6 +9,7 @@ import { useTheme } from '@mui/material/styles';
 import Link from "next/link";
 import useMediaQuery from '@mui/material/useMediaQuery';
 
+
 const drawerWidth = 240;
 
 export default function Dashboard() {
@@ -17,31 +18,39 @@ export default function Dashboard() {
     const [user, setUser] = useState<any>(null);
 
     const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('sm')); //Detect if the screen is small (mobile)
+    //Detect if the screen is small (mobile)
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm')); 
     const [open, setOpen] = React.useState(false);
-
-   const handleDrawerToggle = () => { // Function to toggle the drawer open/close
+    // Function to toggle the drawer open/close
+    const handleDrawerToggle = () => { 
         setOpen(!open);
     };
     
     useEffect(() => {
-        // Check if token exists in local storage
-        const token = localStorage.getItem("token");
-        if(!token){
-            router.push("/login");
+        const getUserFromCookies = () => {
+            const userCookies = document.cookie.split(';')
+                .find(cookie => cookie.trim().startsWith('user='));
+
+            if(!userCookies){
+                return null;
+            }
+
+            try{
+                const userValue = userCookies.split('=')[1];
+                return JSON.parse(decodeURIComponent(userValue));
+            }catch (error){
+                console.error("Error parsing user cookie:", error);
+                return null;
+            }
+        };
+
+        const user = getUserFromCookies();
+        if(!user){
+            router.push('/login');
             return;
         }
 
-        // If token exists, try to get user data
-        const userData = localStorage.getItem("user");
-        if(userData){
-            try{
-                setUser(JSON.parse(userData));
-            }catch(e){
-                console.error("Error parsing user data:", e);
-            }
-        }
-
+        setUser(user);
         setLoading(false);
     },[router]);
 
@@ -89,10 +98,9 @@ export default function Dashboard() {
                     <div className="flex justify-between items-center mb-6">
                         <h1 className="text-2xl font-bold text-blue-500">Dashboard</h1>
                         <button
-                            onClick={() => {
-                                localStorage.removeItem('token');
-                                localStorage.removeItem('user');
-                                router.push('/login');
+                            onClick={async () => {
+                                await fetch('/api/auth/logout', {method: 'POST'});
+                                router.push('/login'); 
                             }}
                             className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
                         >
