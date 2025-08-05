@@ -7,14 +7,14 @@ export default function CreateProvider(){
     const router = useRouter();
     const [form, setForm] = useState({
         name: "",
-        content: "",
+        description: "",
     });
 
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
 
@@ -23,49 +23,40 @@ export default function CreateProvider(){
         setError("");
 
         //VALIDATIONS
-        if(!form.name || !form.content) {
+        if(!form.name || !form.description) {
             setError("All fields are required.");
             return;
         }
 
         setLoading(true);
+
         try{
-          const response = await fetch("/api/auth/provider", {
-            method: "POST",
-            headers:{
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              name : form.name,
-            content: form.content,
-            })
-          });
+          const existingTask = JSON.parse(localStorage.getItem('tasks') || '[]');
+          const newTask = {
+            id: existingTask.length + 1,
+            taskName: form.name,
+            taskDescription: form.description,
+          };
 
-          if(!response.ok){
-            const errData = await response.json();
-            console.error("Registration error data:", errData);
-            throw new Error(errData.error || "User Registration Failed. Please try again.");
-          }
-
-          alert("Provider registered successfully!");
-          router.push("/"); 
-
-
-        }catch(error: any){
-            setError(error.message || "Provider Registration Failed. Please try again.");
-            console.error("Registration error:", error);
+          const updatelist = [...existingTask, newTask];
+          localStorage.setItem('tasks', JSON.stringify(updatelist));
+          setForm({name: "", description: ""});
+          router.push('/');
+        }catch(error){
+          console.error("Error saving task:", error);
+          setError("Failed to create task. Please try again.");
         }finally{
-            setLoading(false);
+          setLoading(false);
         }
     };
 
   return (
     <div className="container mx-auto p-4 max-w-md">
-      <h1 className="text-2xl font-bold mb-4 text-blue-500">Create Provider</h1>
+      <h1 className="text-2xl font-bold mb-4 text-blue-500">Create Task</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block mb-1 text-black">Name</label>
+          <label className="block mb-1 text-black">Task Name</label>
           <input
             type="text"
             name="name"
@@ -76,11 +67,11 @@ export default function CreateProvider(){
         </div>
         
         <div>
-          <label className="block mb-1 text-black">Content</label>
+          <label className="block mb-1 text-black">Description</label>
           <input
             type="text"
-            name="content"
-            value={form.content}
+            name="description"
+            value={form.description}
             onChange={handleChange}
             className="w-full p-2 border rounded border-black text-black"
           />

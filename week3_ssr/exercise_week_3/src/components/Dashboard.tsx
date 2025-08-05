@@ -5,6 +5,7 @@ import React from "react";
 import { Toolbar, Box } from "@mui/material";
 import AppB from "../components/user/AppBar";
 import Draw from "../components/user/Draw";
+import Task from "../components/user/Task";
 import { useTheme } from '@mui/material/styles';
 import Link from "next/link";
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -95,25 +96,9 @@ export default function Dashboard() {
             >
                 <Toolbar />
                 <div className="container mx-auto p-4">
-                    <div className="flex justify-between items-center mb-6">
-                        <h1 className="text-2xl font-bold text-blue-500">Dashboard</h1>
-                        <button
-                            onClick={async () => {
-                                await fetch('/api/auth/logout', {method: 'POST'});
-                                router.push('/login'); 
-                            }}
-                            className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
-                        >
-                            Logout
-                        </button>
-                    </div>
-
-                    <div className="bg-transparent shadow rounded-lg p-8 mb-6 text-center border-[#D6D4D4]">
-                        <h2 className="text-2xl font-bold mb-3 text-black">Welcome!</h2>
-                        <p className="text-lg text-black">
-                            Hello, <span className="font-semibold text-blue-500">{user.username }</span>
-                            <span className="text-gray-500"> ({user.email})</span>
-                        </p>
+                    <h1 className="text-2xl font-bold text-blue-500 mb-3">Dashboard</h1>
+                    <div className="bg-white shadow rounded-lg p-8 mb-6 text-center border border-[#d4d4d6]">
+                        <Task />
                     </div>
                 </div>
             </Box>

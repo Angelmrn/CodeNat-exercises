@@ -6,7 +6,7 @@ export async function POST(request: Request) {
   const { username, email, password } = body;
   
   try {
-    // Llamar a tu API externa
+    
     const response = await fetch("https://bapi.suajam.com/arteukimil/api/v1/auth/login/", {
       method: "POST",
       headers: {
@@ -16,38 +16,58 @@ export async function POST(request: Request) {
       body: JSON.stringify({ username, email, password })
     });
 
+    const responseText = await response.text();
+
     if (!response.ok) {
-      const error = await response.json();
-      return NextResponse.json({ error: error.message || "Invalid credentials" }, { status: response.status });
+      let errorMsg = "Invalid credentials";
+      try {
+        const error = JSON.parse(responseText);
+        errorMsg = error.detail || error.message || error.error || errorMsg;
+      } catch (e) {}
+      
+      return NextResponse.json({ error: errorMsg }, { status: response.status });
     }
 
-    const data = await response.json();
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (e) {
+      return NextResponse.json({ error: "Invalid response format" }, { status: 500 });
+    }
 
-    //Store the token in cookies
+    //Detect token in multiple formats
+    const token = data.key || data.token || data.access || data.access_token;
+    
+    if (!token) {
+      return NextResponse.json({ error: "No token in response" }, { status: 500 });
+    }
+
+    // Store the token in cookies
     (await cookies()).set({
-        name: 'token',
-        value: data.token,
-        httpOnly: true,
-        path: '/',
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 60 * 60 * 24 // 1 day
+      name: 'token',
+      value: token, 
+      httpOnly: true,
+      path: '/',
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 24 
     });
 
     // Store user data in cookies
     (await cookies()).set({
-        name: 'user',
-        value: JSON.stringify({
-            username,
-            email
-        }),
-        path: '/',
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 60 * 60 * 24 // 1 day
+      name: 'user',
+      value: JSON.stringify({
+        username,
+        email,
+        ...((data.user || data.profile) && { profile: data.user || data.profile })
+      }),
+      path: '/',
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 24 
     });
 
     return NextResponse.json({ success: true });
-    }catch(error){
-        console.error('Login error: ', error);
-        return NextResponse.json({error: 'Error during login'}, { status: 500 });
-    }
+  } catch (error) {
+    console.error('Login error: ', error);
+    return NextResponse.json({ error: 'Error during login' }, { status: 500 });
+  }
 }
