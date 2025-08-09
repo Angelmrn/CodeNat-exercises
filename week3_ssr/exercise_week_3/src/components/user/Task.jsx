@@ -46,11 +46,11 @@ export default function DataTable() {
   },[]);
 
   const handleCreateTask = () => {
-    router.push('provider/create');
+    router.push('task/create');
   };
 
   const handleTaskClick = (params) => {
-    router.push(`/provider/${params.id}`);
+    router.push(`/task/${params.id}`);
   }
 
   return (

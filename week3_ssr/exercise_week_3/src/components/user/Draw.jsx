@@ -14,11 +14,11 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 export default function Draw({variant, open, onClose, drawerWidth}) {
 
   const drawerItems = [
-    { text: 'Add Provider', icon : <AddIcon />, url: '/provider/create' },
+    { text: 'Add Task', icon : <AddIcon />, url: '/task/create' },
     { text: 'Profile', icon : <AccountBoxIcon />, url: '/profile' },
     { text: 'Tasks', icon : <AssignmentIcon />, url: '/' },
-  
-    
+    { text: 'Add Provider', icon : <AddIcon />, url: '/provider/create' },
+
   ];
 
   return (
