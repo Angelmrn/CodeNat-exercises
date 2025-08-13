@@ -78,6 +78,7 @@ export async function POST(request: Request) {
 }
 
 
+
 export async function GET(){
     try{
         const cookieStore = await cookies();
@@ -93,7 +94,7 @@ export async function GET(){
             method: "GET",
             headers:{
                 "Content-Type": "application/json",
-                "Authorization": `Token ${authToken}`,
+                'Authorization': `JWT ${authToken}`,
             }
         });
 
@@ -121,3 +122,4 @@ export async function GET(){
         });
     }
 }
+

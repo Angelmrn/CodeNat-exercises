@@ -114,6 +114,10 @@ export default function CreateProvider(){
         >
            Create
         </button>
+
+        <p className="text-center">
+          <Link href="/provider/providers_view" className="text-blue-500">Go Back</Link>
+        </p>
       </form>
     </div>
   );

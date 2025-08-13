@@ -10,6 +10,8 @@ import Link from 'next/link';
 import AddIcon from '@mui/icons-material/Add';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import AssignmentIcon from '@mui/icons-material/Assignment';
+import ViewListIcon from '@mui/icons-material/ViewList';
+import Inventory2Icon from '@mui/icons-material/Inventory2';
 
 export default function Draw({variant, open, onClose, drawerWidth}) {
 
@@ -18,6 +20,8 @@ export default function Draw({variant, open, onClose, drawerWidth}) {
     { text: 'Profile', icon : <AccountBoxIcon />, url: '/profile' },
     { text: 'Tasks', icon : <AssignmentIcon />, url: '/' },
     { text: 'Add Provider', icon : <AddIcon />, url: '/provider/create' },
+    { text: 'View Providers', icon : <ViewListIcon />, url: '/provider/providers_view' },
+    { text: 'View Products', icon : <Inventory2Icon/>, url: '/products'}
 
   ];
 

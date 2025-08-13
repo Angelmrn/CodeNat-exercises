@@ -6,6 +6,7 @@ import { Toolbar, Box } from "@mui/material";
 import AppB from "../components/user/AppBar";
 import Draw from "../components/user/Draw";
 import Task from "../components/user/Task";
+import Providers from "../components/user/Providers";
 import { useTheme } from '@mui/material/styles';
 import Link from "next/link";
 import useMediaQuery from '@mui/material/useMediaQuery';
