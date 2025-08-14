@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Paper, Box, Typography, Button, Divider } from "@mui/material";
 import Loading from "./loading";
 
+
 interface Provider {
   id: number;
   business_name: string;

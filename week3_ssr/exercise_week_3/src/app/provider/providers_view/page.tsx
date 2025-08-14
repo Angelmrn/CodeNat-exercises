@@ -5,7 +5,7 @@ import React from "react";
 import { Toolbar, Box } from "@mui/material";
 import AppB from "../../../components/user/AppBar";
 import Draw from "../../../components/user/Draw";
-import Providers from "../../../components/user/Providers";
+import Providers from "../../../components/providers/Providers";
 import { useTheme } from '@mui/material/styles';
 import Link from "next/link";
 import useMediaQuery from '@mui/material/useMediaQuery';
