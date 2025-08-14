@@ -57,7 +57,7 @@ export default function CreateProvider(){
           alert("Provider created successfully");
           
 
-          router.push('/');
+          router.push('/provider/providers_view');
 
         }catch(error: any){
           console.error("Error creating provider:", error);

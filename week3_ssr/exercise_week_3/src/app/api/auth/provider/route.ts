@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 
 export async function POST(request: Request) {
   console.log("API route called: POST /api/provider");
@@ -64,7 +65,10 @@ export async function POST(request: Request) {
       console.log("Failed to parse successful response as JSON");
       data = { message: "Provider created successfully" };
     }
-    
+
+    revalidatePath('/provider');
+    console.log("Revalidated path: /provider");
+
     console.log("Returning success response to client");
     return NextResponse.json(data, { status: 201 });
 
@@ -95,7 +99,8 @@ export async function GET(){
             headers:{
                 "Content-Type": "application/json",
                 'Authorization': `JWT ${authToken}`,
-            }
+            },
+            cache: 'no-store'
         });
 
         if(!response.ok){

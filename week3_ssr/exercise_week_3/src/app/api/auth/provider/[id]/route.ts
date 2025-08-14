@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 
 export async function PUT(request: Request, context: { params: { id: string } }) {
     try {
@@ -23,6 +24,7 @@ export async function PUT(request: Request, context: { params: { id: string } })
                     "Content-Type": "application/json",
                     'Authorization': `JWT ${authToken}`,
                 },
+                cache: 'no-store'
             }
         );
 
@@ -47,7 +49,6 @@ export async function PUT(request: Request, context: { params: { id: string } })
             );
         }
         
-        // 3. Intentar actualización directa
         const updateResponse = await fetch(`https://bapi.suajam.com/arteukimil/api/v1/inventory/supplier/${id}`, {
             method: "PUT",
             headers: {
@@ -57,7 +58,6 @@ export async function PUT(request: Request, context: { params: { id: string } })
             body: JSON.stringify(body)
         });
 
-        // 4. Procesamos la respuesta - sin simulación
         const responseText = await updateResponse.text();
         console.log(`API Response Status: ${updateResponse.status}`);
         console.log(`API Response Body: ${responseText.substring(0, 200)}...`);
@@ -70,7 +70,6 @@ export async function PUT(request: Request, context: { params: { id: string } })
                 errorData = { detail: `API Error: ${updateResponse.status} ${updateResponse.statusText}` };
             }
             
-            // Devolver el error tal cual viene de la API
             return NextResponse.json(
                 { 
                     detail: errorData?.detail || errorData?.message || `Failed to update provider: ${updateResponse.status} ${updateResponse.statusText}`, 
@@ -81,14 +80,17 @@ export async function PUT(request: Request, context: { params: { id: string } })
             );
         }
 
-        // Si llegamos aquí, la actualización tuvo éxito
         let data;
         try {
             data = JSON.parse(responseText);
         } catch {
             data = { id: parseInt(id), ...body };
         }
-        
+
+        revalidatePath('/provider');
+        revalidatePath(`/provider/${id}`);
+        console.log(`Paths /provider and /provider/${id} revalidated after successful PUT`);
+
         return NextResponse.json(data);
     } catch (error) {
         console.error("Error updating provider:", error);
@@ -103,17 +105,17 @@ export async function PUT(request: Request, context: { params: { id: string } })
 export async function GET(request: Request, context: { params: { id: string } }) {
     try {
         const { id } = await context.params;
-        console.log(`🔍 GET Provider ID: ${id}`);
+        console.log(`GET Provider ID: ${id}`);
         
         const cookieStore = await cookies();
         const authToken = cookieStore.get('token')?.value;
-        console.log(`🔑 Token exists: ${!!authToken}`);
+        console.log(`Token exists: ${!!authToken}`);
 
         if (!authToken) {
             return NextResponse.json({ detail: 'Unauthorized' }, { status: 401 });
         }
 
-        // Intentemos primero obtener la lista completa
+        // get list of providers
         const listResponse = await fetch(
             `https://bapi.suajam.com/arteukimil/api/v1/inventory/supplier`,
             {
@@ -122,6 +124,7 @@ export async function GET(request: Request, context: { params: { id: string } })
                     "Content-Type": "application/json",
                     'Authorization': `JWT ${authToken}`,
                 },
+                cache: 'no-store'
             }
         );
         
@@ -133,8 +136,8 @@ export async function GET(request: Request, context: { params: { id: string } })
         }
         
         const providers = await listResponse.json();
-        
-        // Buscar el provider específico por ID
+
+        // Search for the specific provider by ID
         const provider = Array.isArray(providers) 
             ? providers.find((p: any) => p.id === parseInt(id))
             : (providers.results || []).find((p: any) => p.id === parseInt(id));
@@ -148,7 +151,7 @@ export async function GET(request: Request, context: { params: { id: string } })
         
         return NextResponse.json(provider);
     } catch (error) {
-        console.error(`❌ Error: ${error}`);
+        console.error(`Error: ${error}`);
         return NextResponse.json({ 
             detail: "Failed to retrieve provider", 
             error: String(error)

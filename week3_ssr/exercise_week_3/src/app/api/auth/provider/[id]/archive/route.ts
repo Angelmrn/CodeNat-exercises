@@ -1,10 +1,10 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { parse } from 'path';
+import { revalidatePath } from 'next/cache';
 
 export async function PUT(request: Request, context: { params: { id: string } }) {
     try {
-        const { id } = context.params;
+        const { id } = await context.params;
         const cookieStore = await cookies();
         const authToken = cookieStore.get('token')?.value;
 
@@ -18,7 +18,8 @@ export async function PUT(request: Request, context: { params: { id: string } })
             headers: {
                 "content-type": "application/json",
                 "Authorization": `JWT ${authToken}`
-            }
+            },
+            cache: 'no-store'
         });
         if(!getResponse.ok){
             return NextResponse.json({ detail: "Provider not found" }, { status: 404 });
@@ -55,6 +56,9 @@ export async function PUT(request: Request, context: { params: { id: string } })
                 {status: updateResponse.status}
             );
         }
+
+        revalidatePath('/provider');
+        console.log(`Path /provider revalidated after successfully archiving provider ${id}`);
 
         return NextResponse.json({
             message: "Provider archived successfully",

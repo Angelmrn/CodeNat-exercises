@@ -42,6 +42,7 @@ export default function Providers() {
     message: '',
     severity: 'success' as 'success' | 'error'
   });
+  const [lastRefresh, setLastRefresh] = useState(new Date());
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -92,6 +93,7 @@ export default function Providers() {
     try {
       const response = await fetch("/api/auth/provider", {
         method: "GET",
+        cache: "no-cache",
       });
       if (!response.ok) throw new Error("Failed to fetch providers");
       const data = await response.json();
@@ -158,11 +160,12 @@ export default function Providers() {
       if (!response.ok) {
         throw new Error(data.detail || 'Failed to archive provider');
       }
+      router.refresh();
 
-      // Remover el proveedor de la lista visible
+      // Remove the archived provider from the visible list
       setRows(prevRows => prevRows.filter(row => row.id !== currentProvider.id));
 
-      // Actualizar localStorage
+      // Update localStorage
       const providers = JSON.parse(localStorage.getItem('providers') || '[]');
       const updatedProviders = providers.map((p: Provider) => 
         p.id === currentProvider.id ? { ...p, is_archived: true } : p
@@ -222,8 +225,9 @@ export default function Providers() {
       if (!response.ok) {
         throw new Error(data.detail || 'Failed to update provider');
       }
+      router.refresh();
 
-      // Actualizar la lista en memoria
+      // Upload changes
       setRows(prevRows => 
         prevRows.map(row => 
           row.id === currentProvider.id 
@@ -232,7 +236,7 @@ export default function Providers() {
         )
       );
 
-      // Actualizar localStorage
+      // Update localStorage
       const providers = JSON.parse(localStorage.getItem('providers') || '[]');
       const updatedProviders = providers.map((p: Provider) => 
         p.id === currentProvider.id ? { ...p, ...editForm } : p
