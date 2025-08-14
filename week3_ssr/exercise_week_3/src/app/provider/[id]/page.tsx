@@ -136,8 +136,8 @@ export default function ProviderDetail() {
       </Paper>
 
       <p className="text-center mt-4">
-        <Link href={`/provider/${provider.id}/edit`} className="text-blue-500">
-          Edit Provider
+        <Link href={"/provider/providers_view"} className="text-blue-500">
+          Go Back
         </Link>
       </p>
     </div>
