@@ -134,6 +134,12 @@ export default function ProviderDetail() {
           </Typography>
         </Box>
       </Paper>
+
+      <p className="text-center mt-4">
+        <Link href={`/provider/${provider.id}/edit`} className="text-blue-500">
+          Edit Provider
+        </Link>
+      </p>
     </div>
   );
 }
