@@ -1,17 +1,29 @@
 "use client";
-import { use, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { userAuth } from "@/hooks/userAuth";
+import Loading from "./loading";
 
 export default function CreateTask(){
     const router = useRouter();
+    const { user, loading: authLoading } = userAuth();
+
     const [form, setForm] = useState({
         name: "",
         description: "",
     });
 
-    const [error, setError] = useState("");
-    const [loading, setLoading] = useState(false);
+    //const [error, setError] = useState("");
+    const [loading, setLoading] = useState(true);
+    const [validationError, setValidationError] = useState("");
+    const [criticalError, setCriticalError] = useState<Error | null>(null);
+
+    useEffect(() => {
+      if(criticalError){
+        throw criticalError;
+      }
+    }, [criticalError])
 
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -20,11 +32,11 @@ export default function CreateTask(){
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError("");
+        setValidationError("");
 
         //VALIDATIONS
         if(!form.name || !form.description) {
-            setError("All fields are required.");
+            setValidationError("All fields are required.");
             return;
         }
 
@@ -41,14 +53,19 @@ export default function CreateTask(){
           const updatelist = [...existingTask, newTask];
           localStorage.setItem('tasks', JSON.stringify(updatelist));
           setForm({name: "", description: ""});
+          alert("Task created successfully!");
           router.push('/');
         }catch(error){
           console.error("Error saving task:", error);
-          setError("Failed to create task. Please try again.");
+          setValidationError("Failed to create task. Please try again.");
         }finally{
           setLoading(false);
         }
     };
+
+    if(authLoading){
+      <Loading />
+    }
 
   return (
     <div className="container mx-auto p-4 max-w-md">
@@ -78,7 +95,7 @@ export default function CreateTask(){
         </div>
         
         
-        {error && <p className="text-red-500">{error}</p>}
+        {validationError && <p className="text-red-500">{validationError}</p>}
         
         <button 
           type="submit" 

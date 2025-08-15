@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback } from "react";
 import { notFound, useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Paper, Box, Typography, Button, Divider } from "@mui/material";
+
 import Loading from "./loading";
 
 interface Provider {

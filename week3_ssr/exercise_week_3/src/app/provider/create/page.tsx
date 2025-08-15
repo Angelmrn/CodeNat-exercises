@@ -2,9 +2,13 @@
 import { use, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { userAuth } from "@/hooks/userAuth";
+import Loading from "./loading";
 
 export default function CreateProvider(){
     const router = useRouter();
+    const { user, loading: authLoading } = userAuth();
+    
     const [form, setForm] = useState({
         business_name: "",
         email: "",
@@ -16,36 +20,8 @@ export default function CreateProvider(){
     //Critical errors call error.tsx
     const [criticalError, setCriticalError] = useState<Error | null>(null);
     const [loading, setLoading] = useState(true);
-    const [user, setUser] = useState<any>(null);
     const Regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    useEffect(() => {
-      const getUserFromCookies = () => {
-            const userCookies = document.cookie.split(';')
-                .find(cookie => cookie.trim().startsWith('user='));
-
-            if (!userCookies) {
-                return null;
-            }
-
-            try {
-                const userValue = userCookies.split('=')[1];
-                return JSON.parse(decodeURIComponent(userValue));
-            } catch (error) {
-                console.error("Error parsing user cookie:", error);
-                return null;
-            }
-        };
-
-        const user = getUserFromCookies();
-        if(!user){
-          router.push("/login");
-          return;
-        }
-
-        setUser(user);
-        setLoading(false);
-    }, [router]);
 
     useEffect(() => {
       if(criticalError){
@@ -119,27 +95,8 @@ export default function CreateProvider(){
         }
     };
 
-    if (loading && !criticalError) {
-        return (
-            <div>Loading...
-            </div>
-        );
-    }
-
-   if (!user && !loading) {
-        return (
-            <div className="flex items-center justify-center h-screen">
-                <div className="text-center">
-                    <p>You need to be logged in to access this page.</p>
-                    <button
-                        onClick={() => router.push("/login?returnUrl=/provider/create")}
-                        className="mt-4 bg-blue-500 text-white px-4 py-2 rounded"
-                    >
-                        Go to Login
-                    </button>
-                </div>
-            </div>
-        );
+    if (authLoading) {
+        <Loading />
     }
   
   return(
