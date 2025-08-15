@@ -1,10 +1,9 @@
 "use client";
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState, useCallback } from "react";
+import { notFound, useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Paper, Box, Typography, Button, Divider } from "@mui/material";
 import Loading from "./loading";
-
 
 interface Provider {
   id: number;
@@ -12,62 +11,66 @@ interface Provider {
   email: string;
   phone: string;
 }
-
 export default function ProviderDetail() {
   const params = useParams();
   const router = useRouter();
   const [provider, setProvider] = useState<Provider | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<Error | null>(null);
 
   // Obtain the provider ID from the URL parameters
   const providerId = params.id;
 
-  useEffect(() => {
-    // Load provider details from API
-    const fetchProvider = () => {
+  const fetchProvider = useCallback(async () => {
     try {
-    const providers: Provider[] = JSON.parse(localStorage.getItem("providers") || "[]");
-    const foundProvider = providers.find((p: Provider) => p.id === Number(providerId));
-      if (foundProvider) {
-        setProvider(foundProvider);
-        setError("");
-      } else {
-        setProvider(null);
-        setError("Provider not found");
+      setLoading(true);
+      const response = await fetch(`/api/auth/provider/${providerId}`, {
+        method: "GET",
+        cache: "no-store"
+      });
+
+      if(response.status === 404){
+        return notFound();
       }
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+       if (response.status === 401) {
+          throw new Error("Authentication required. Please log in again.");
+        } else {
+          throw new Error(data.detail || "Failed to load provider details");
+        }
+      }
+      
+      setProvider(data);
+      setError(null);
+
     } catch (err) {
+      console.error("Error fetching provider:", err);
       setProvider(null);
-      setError("Failed to load provider details");
+      setError(err instanceof Error ? err : new Error(String(err)));
     } finally {
       setLoading(false);
     }
-  };
-  if (providerId) fetchProvider();
-}, [providerId]);
+  }, [providerId]);
 
-  if(loading){
-    return(<Loading/>);
+  useEffect(() => {
+    if (providerId) fetchProvider();
+  }, [providerId, fetchProvider]);
+
+  useEffect(() => {
+    if (error) {
+      throw error;
+    }
+  }, [error]);
+
+  if (loading) {
+    return <Loading />;
   }
 
-  if (error || !provider) {
-    return (
-      <div className="container mx-auto p-4 max-w-md">
-        <Paper className="p-6">
-          <Typography variant="h5" color="error" gutterBottom>
-            {error || "Provider not found"}
-          </Typography>
-          <Button 
-            variant="contained" 
-            color="primary"
-            component={Link}
-            href="/"
-          >
-            Back to Dashboard
-          </Button>
-        </Paper>
-      </div>
-    );
+  if (!provider) {
+    return notFound();
   }
 
   return (
@@ -81,9 +84,9 @@ export default function ProviderDetail() {
             variant="outlined" 
             color="primary"
             component={Link}
-            href="/"
+            href="/provider/providers_view"
           >
-            Back to Dashboard
+            Back to Providers
           </Button>
         </Box>
 
@@ -135,12 +138,6 @@ export default function ProviderDetail() {
           </Typography>
         </Box>
       </Paper>
-
-      <p className="text-center mt-4">
-        <Link href={"/provider/providers_view"} className="text-blue-500">
-          Go Back
-        </Link>
-      </p>
     </div>
   );
 }

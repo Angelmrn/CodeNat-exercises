@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { notFound, useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Paper, Box, Typography, Button, Divider } from "@mui/material";
 
@@ -30,7 +30,7 @@ export default function TaskDetail() {
       if (foundTask) {
         setTask(foundTask);
       } else {
-        setError("Task not found");
+        notFound();
       }
     } catch (err) {
       console.error("Error loading task details:", err);
@@ -49,23 +49,7 @@ export default function TaskDetail() {
   }
 
   if (error || !task) {
-    return (
-      <div className="container mx-auto p-4 max-w-md">
-        <Paper className="p-6">
-          <Typography variant="h5" color="error" gutterBottom>
-            {error || "Task not found"}
-          </Typography>
-          <Button 
-            variant="contained" 
-            color="primary"
-            component={Link}
-            href="/"
-          >
-            Back to Dashboard
-          </Button>
-        </Paper>
-      </div>
-    );
+    return notFound();
   }
 
   return (

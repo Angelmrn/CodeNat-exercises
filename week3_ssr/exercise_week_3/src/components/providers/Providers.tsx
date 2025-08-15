@@ -1,21 +1,14 @@
-import React, { useEffect, useState } from 'react';
+"use client"
+import React, { useCallback, useEffect, useState } from 'react';
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
-import Paper from '@mui/material/Paper';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContentText from '@mui/material/DialogContentText';
-import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
 import EditIcon from '@mui/icons-material/Edit';
 import ArchiveIcon from '@mui/icons-material/Archive';
 import { useRouter } from 'next/navigation';
 import Snackbar from '@mui/material/Snackbar';
-import Alert from '@mui/material/Alert';
-import Tooltip from '@mui/material/Tooltip';
+import {Typography, Tooltip, Alert, TextField, DialogContentText, DialogTitle, 
+  DialogContent, DialogActions, Dialog, Button, Box, Paper} from '@mui/material';
+
 
 interface Provider {
   id: number;
@@ -43,6 +36,7 @@ export default function Providers() {
     severity: 'success' as 'success' | 'error'
   });
   const [lastRefresh, setLastRefresh] = useState(new Date());
+  const [error, setError] = useState<Error | null>(null);
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -85,17 +79,32 @@ export default function Providers() {
     }
   ];
 
-  useEffect(() => {
-    fetchProviders();
-  }, []);
-
-  const fetchProviders = async () => {
+  const fetchProviders = useCallback(async () => {
     try {
+      setLoading(true);
+
       const response = await fetch("/api/auth/provider", {
         method: "GET",
         cache: "no-cache",
       });
-      if (!response.ok) throw new Error("Failed to fetch providers");
+
+      if (!response.ok){
+        const errorData = await response.json();
+        const errorMessage = errorData.detail || 'Failed to fetch providers';
+
+        if(response.status === 401){
+          throw new Error("Authentication required. Please log in again.");
+        } else if (response.status === 403) {
+          throw new Error("You don't have permission to view providers.");
+        } else if (response.status === 404) {
+          throw new Error("Provider resource not found.");
+        } else if (response.status >= 500) {
+          throw new Error("Server error. Please try again later.");
+        } else {
+          throw new Error(errorMessage);
+        }
+      }
+
       const data = await response.json();
       // make sure data is an array of providers
       const providersData = Array.isArray(data) ? data : data.results || [];
@@ -107,10 +116,41 @@ export default function Providers() {
     } catch (error) {
       console.error("Error fetching providers:", error);
       setRows([]);
+      // Save the error to show in Next.js error.tsx
+      setError(error instanceof Error ? error : new Error(String(error)));
+      
+      if (!(error instanceof Error) || 
+          (!error.message.includes("Authentication required") && 
+           !error.message.includes("Server error"))) {
+        setNotification({
+          open: true,
+          message: error instanceof Error ? error.message : "Failed to load providers",
+          severity: 'error'
+        });
+      }
+
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchProviders();
+  }, [fetchProviders]);
+
+  useEffect(() => {
+    if (error) {
+      // Lanzar cualquier error para que lo maneje error.tsx
+      // O puedes ser selectivo:
+      if (
+        error.message.includes("Authentication required") || 
+        error.message.includes("Server error") ||
+        error.message.includes("permission")
+      ) {
+        throw error; // Esto activará el error.tsx global
+      }
+    }
+  }, [error]);
 
   const handleEditClick = (provider: Provider) => {
     setCurrentProvider(provider);
@@ -158,7 +198,13 @@ export default function Providers() {
       const data = await response.json();
       
       if (!response.ok) {
-        throw new Error(data.detail || 'Failed to archive provider');
+        if (response.status === 404) {
+          throw new Error("Provider not found or already archived");
+        } else if (response.status === 401) {
+          throw new Error("Authentication required. Please log in again.");
+        } else {
+          throw new Error(data.detail || 'Failed to archive provider');
+        }
       }
       router.refresh();
 
@@ -181,6 +227,9 @@ export default function Providers() {
       handleArchiveClose();
     } catch (error: any) {
       console.error('Error archiving provider:', error);
+      if(error.message.includes("Authentication required")){
+        throw error;
+      }
       setNotification({
         open: true,
         message: error.message || 'Failed to archive provider',
@@ -223,7 +272,13 @@ export default function Providers() {
       const data = await response.json();
       
       if (!response.ok) {
-        throw new Error(data.detail || 'Failed to update provider');
+        if (response.status === 404) {
+          throw new Error("Provider not found");
+        } else if (response.status === 401) {
+          throw new Error("Authentication required. Please log in again.");
+        } else {
+          throw new Error(data.detail || 'Failed to update provider');
+        }
       }
       router.refresh();
 
@@ -252,6 +307,9 @@ export default function Providers() {
       handleEditClose();
     } catch (error: any) {
       console.error('Error updating provider:', error);
+      if(error.message.includes("Authentication required")){
+        throw error;
+      }
       setNotification({
         open: true,
         message: error.message || 'Failed to update provider',
@@ -275,7 +333,9 @@ export default function Providers() {
     });
   };
 
+
   return (
+   
     <Box sx={{ width: '100%' }}>
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2, alignItems: 'center' }}>
         <Button 

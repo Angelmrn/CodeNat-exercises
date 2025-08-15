@@ -19,7 +19,7 @@ export default function ProviderErr({
     <Container maxWidth="md" sx={{ py: 3 }}>
       <Paper elevation={2} sx={{ p: 3 }}>
         <Typography variant="h5" component="h2" gutterBottom>
-          Error loading provider data
+          Error loading providers data
         </Typography>
         
         {process.env.NODE_ENV === "development" && (

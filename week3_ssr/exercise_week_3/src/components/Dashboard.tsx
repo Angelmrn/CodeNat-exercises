@@ -100,6 +100,7 @@ export default function Dashboard() {
                     <h1 className="text-2xl font-bold text-blue-500 mb-3">Dashboard</h1>
                     <div className="bg-white shadow rounded-lg p-8 mb-6 text-center border border-[#d4d4d6]">
                         <Task />
+                        
                     </div>
                 </div>
             </Box>

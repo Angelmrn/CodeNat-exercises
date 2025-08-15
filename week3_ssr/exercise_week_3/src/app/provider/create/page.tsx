@@ -1,5 +1,5 @@
 "use client";
-import { use, useState } from "react";
+import { use, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -11,9 +11,47 @@ export default function CreateProvider(){
         phone:"",
     });
 
-    const [error, setError] = useState("");
-    const [loading, setLoading] = useState(false);
+    //Validation errors
+    const [validationError, setValidationError] = useState("");
+    //Critical errors call error.tsx
+    const [criticalError, setCriticalError] = useState<Error | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState<any>(null);
     const Regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    useEffect(() => {
+      const getUserFromCookies = () => {
+            const userCookies = document.cookie.split(';')
+                .find(cookie => cookie.trim().startsWith('user='));
+
+            if (!userCookies) {
+                return null;
+            }
+
+            try {
+                const userValue = userCookies.split('=')[1];
+                return JSON.parse(decodeURIComponent(userValue));
+            } catch (error) {
+                console.error("Error parsing user cookie:", error);
+                return null;
+            }
+        };
+
+        const user = getUserFromCookies();
+        if(!user){
+          router.push("/login");
+          return;
+        }
+
+        setUser(user);
+        setLoading(false);
+    }, [router]);
+
+    useEffect(() => {
+      if(criticalError){
+        throw criticalError;
+      }
+    }, [criticalError])
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setForm({ ...form, [e.target.name]: e.target.value });
@@ -21,15 +59,15 @@ export default function CreateProvider(){
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError("");
+        setValidationError("");
 
         //VALIDATIONS
         if(!form.business_name || !form.email || !form.phone) {
-            setError("All fields are required.");
+            setValidationError("All fields are required.");
             return;
         }
         if(!Regex.test(form.email)){
-            setError("Invalid email format.");
+            setValidationError("Invalid email format.");
             return;
         }
         setLoading(true);
@@ -52,24 +90,60 @@ export default function CreateProvider(){
           if(!response.ok){
             const errData = await response.json();
             console.log("Provider creation error data:", errData);
-            throw new Error(errData.message || "Failed to create provider. Please try again.");
+            if(response.status == 401){
+              setCriticalError(errData.message || "Unauthorized access.");
+              return;
+            }else if(response.status >= 500){
+              setCriticalError(new Error("Server error. Please try again later."));
+              return;
+            }else if(response.status === 403){
+              setCriticalError(new Error("You don't have permission to create providers."));
+              return;
+            }else{
+              setValidationError(errData.detail || "Failed to create provider. Please check your data.");
+            }
+          }else{
+            alert("Provider created successfully");
+            router.push('/provider/providers_view');
           }
-          alert("Provider created successfully");
-          
-
-          router.push('/provider/providers_view');
 
         }catch(error: any){
           console.error("Error creating provider:", error);
-          setError(error.message || "Failed to create provider. Please try again.");
+
+          setCriticalError(
+            error instanceof Error ? error : new Error("An unexpected error occurred")
+          );
 
         }finally{
           setLoading(false);
         }
     };
+
+    if (loading && !criticalError) {
+        return (
+            <div>Loading...
+            </div>
+        );
+    }
+
+   if (!user && !loading) {
+        return (
+            <div className="flex items-center justify-center h-screen">
+                <div className="text-center">
+                    <p>You need to be logged in to access this page.</p>
+                    <button
+                        onClick={() => router.push("/login?returnUrl=/provider/create")}
+                        className="mt-4 bg-blue-500 text-white px-4 py-2 rounded"
+                    >
+                        Go to Login
+                    </button>
+                </div>
+            </div>
+        );
+    }
   
   return(
-<div className="container mx-auto p-4 max-w-md">
+    <div className="container mx-auto p-4 max-w-md">
       <h1 className="text-2xl font-bold mb-4 text-blue-500">Create Provider</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -106,7 +180,7 @@ export default function CreateProvider(){
           />
         </div>
         
-        {error && <p className="text-red-500">{error}</p>}
+        {validationError && <p className="text-red-500">{validationError}</p>}
         
         <button 
           type="submit" 
